@@ -6,8 +6,6 @@ import time
 
 REGIONS = ("EU","NA","OCE","SAM","MENA","APAC","SSA")
 
-# Your Ballchasing API key
-
 authfile = open("auth.txt",'r')
 AUTH = authfile.readline()
 authfile.close()
@@ -109,6 +107,19 @@ def formatMatchCarballTV(s):
 
     return ret
 
+def formatSeriesName(b,o):
+    '''
+    Formats a string that identifies a series.
+    Team names can be parsed easily because lower case team names are not possible
+    
+    :param b: Blue team name
+    :param o: Orange team name
+    
+    :return: Formatted string
+    '''
+
+    return f"{b} vs {o}"
+
 series={}
 
 while True:
@@ -116,7 +127,7 @@ while True:
     now = datetime.datetime.now(datetime.timezone.utc)
 
     # To test on historical data, adjust THIS timedelta
-    then = now - datetime.timedelta(minutes=140)
+    then = now - datetime.timedelta(minutes=149)
 
     # That is to say, not this one!
     then2 = then - datetime.timedelta(minutes=1)
@@ -181,16 +192,16 @@ while True:
             # If this matchup has never taken place before
             # Create a new entry
             try:
-                thisseries=series[blueteam+orangeteam]
+                thisseries=series[formatSeriesName(blueteam,orangeteam)]
                 if len(thisseries["games"])+1<gameno:
                     continue
             except KeyError:
-                series[blueteam+orangeteam]={"blue" : blueteam,
+                series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
                                              "orange" : orangeteam,
                                              "time" : int(round(gametime.timestamp())),
                                              "games" : {}}
 
-                thisseries=series[blueteam+orangeteam]
+                thisseries=series[formatSeriesName(blueteam,orangeteam)]
 
                 if gametitle[-2] == "G0":
                     print(formatMatchRLCS(thisseries))
@@ -208,7 +219,7 @@ while True:
                     (gametitle[-2] == "G0" and \
                     (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
                     + datetime.timedelta(minutes=20) < gametime)):
-                    series[blueteam+orangeteam]={"blue" : blueteam,
+                    series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
                                                 "orange" : orangeteam,
                                                 "time" : int(round(gametime.timestamp())),
                                                 "games" : {}}
@@ -231,16 +242,17 @@ while True:
                 pass
             
             # Create a new game entry, or update the existing one
-            series[blueteam+orangeteam]["games"][gametitle[-2]]={
+            series[formatSeriesName(blueteam,orangeteam)]["games"][gametitle[-2]]={
                 "bluescore" : gamebluescore,
                 "orangescore" : gameorangescore,
+                "time" : int(round(gametime.timestamp())),
                 "ot" : gameot}
 
             # All handling for test lobbies should be done
             if gametitle[-2] == "G0":
                 continue
 
-            thisseries=series[blueteam+orangeteam]
+            thisseries=series[formatSeriesName(blueteam,orangeteam)]
 
             print(formatMatchRLCS(thisseries))
             printToTimeline(formatMatchCarballTV(thisseries))
