@@ -7,7 +7,10 @@ import time
 REGIONS = ("EU","NA","OCE","SAM","MENA","APAC","SSA")
 
 # Your Ballchasing API key
-AUTH = "w8L30IZjDg2dadG47cRVKx5wNEffZkgoroIkEFNO"
+
+authfile = open("auth.txt",'r')
+AUTH = authfile.readline()
+authfile.close()
 
 def calcSeriesScore(s):
     '''
