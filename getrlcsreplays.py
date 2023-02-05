@@ -116,7 +116,7 @@ while True:
     now = datetime.datetime.now(datetime.timezone.utc)
 
     # To test on historical data, adjust THIS timedelta
-    then = now # - datetime.timedelta(minutes=1)
+    then = now - datetime.timedelta(minutes=140)
 
     # That is to say, not this one!
     then2 = then - datetime.timedelta(minutes=1)
@@ -181,16 +181,16 @@ while True:
             # If this matchup has never taken place before
             # Create a new entry
             try:
-                thisseries=series[blueteam,orangeteam]
+                thisseries=series[blueteam+orangeteam]
                 if len(thisseries["games"])+1<gameno:
                     continue
             except KeyError:
-                series[blueteam,orangeteam]={"blue" : blueteam,
+                series[blueteam+orangeteam]={"blue" : blueteam,
                                              "orange" : orangeteam,
-                                             "time" : gametime,
+                                             "time" : int(round(gametime.timestamp())),
                                              "games" : {}}
 
-                thisseries=series[blueteam,orangeteam]
+                thisseries=series[blueteam+orangeteam]
 
                 if gametitle[-2] == "G0":
                     print(formatMatchRLCS(thisseries))
@@ -203,12 +203,14 @@ while True:
                 # If more the 2 hours have passed since the last time this game was played
                 # Or more than 20 minutes have passed since the last test lobby
                 # Reset this matchup as a new series is expected to be starting soon or is ongoing
-                if (thisseries["time"] + datetime.timedelta(hours=2) < gametime) or \
+                if (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
+                    + datetime.timedelta(hours=2) < gametime) or \
                     (gametitle[-2] == "G0" and \
-                    (thisseries["time"] + datetime.timedelta(minutes=20) < gametime)):
-                    series[blueteam,orangeteam]={"blue" : blueteam,
+                    (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
+                    + datetime.timedelta(minutes=20) < gametime)):
+                    series[blueteam+orangeteam]={"blue" : blueteam,
                                                 "orange" : orangeteam,
-                                                "time" : gametime,
+                                                "time" : int(round(gametime.timestamp())),
                                                 "games" : {}}
 
                     if gametitle[-2] == "G0":
@@ -229,7 +231,7 @@ while True:
                 pass
             
             # Create a new game entry, or update the existing one
-            series[blueteam,orangeteam]["games"][gametitle[-2]]={
+            series[blueteam+orangeteam]["games"][gametitle[-2]]={
                 "bluescore" : gamebluescore,
                 "orangescore" : gameorangescore,
                 "ot" : gameot}
@@ -238,13 +240,12 @@ while True:
             if gametitle[-2] == "G0":
                 continue
 
-            thisseries=series[blueteam,orangeteam]
+            thisseries=series[blueteam+orangeteam]
 
             print(formatMatchRLCS(thisseries))
             printToTimeline(formatMatchCarballTV(thisseries))
-
+        updateJSON()
     else:
         print(response.status_code)
-    updateJSON()
     time.sleep(15)
     
