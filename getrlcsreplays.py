@@ -134,7 +134,8 @@ while True:
 
     url = "https://ballchasing.com/api/replays"
 
-    headers = {"Authorization" : AUTH}
+    headers = {"Authorization" : AUTH,
+                "User-Agent" : "RLCSReplayGetter/060223-1"}
 
     params = {"uploader" : "76561199225615730",
               "playlist" : "private",
