@@ -172,22 +172,11 @@ while True:
             except KeyError:
                 continue
 
-            try:
-                gamebluescore=game["blue"]["goals"]
-            except KeyError:
-                gamebluescore=0
-            try:
-                gameorangescore=game["orange"]["goals"]
-            except KeyError:
-                gameorangescore=0
+            gamebluescore=game["blue"].get("goals",0)
+            gameorangescore=game["orange"].get("goals",0)
 
-            if game["overtime"]:
-                try:
-                    gameot=game['overtime_seconds']
-                except KeyError:
-                    gameot=0
-            else:
-                gameot=0
+            gameot=game.get("ovetime_seconds",0)
+
 
             # If this matchup has never taken place before
             # Create a new entry
