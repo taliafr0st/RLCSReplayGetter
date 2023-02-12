@@ -127,7 +127,7 @@ while True:
     now = datetime.datetime.now(datetime.timezone.utc)
 
     # To test on historical data, adjust THIS timedelta
-    then = now - datetime.timedelta(minutes=149)
+    then = now # - datetime.timedelta(minutes=149)
 
     # That is to say, not this one!
     then2 = then - datetime.timedelta(minutes=1)
@@ -176,7 +176,7 @@ while True:
             gamebluescore=game["blue"].get("goals",0)
             gameorangescore=game["orange"].get("goals",0)
 
-            gameot=game.get("ovetime_seconds",0)
+            gameot=game.get("overtime_seconds",0)
 
 
             # If this matchup has never taken place before
