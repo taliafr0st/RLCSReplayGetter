@@ -8,9 +8,7 @@ Available under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/le
 ## Requirements
 * Python 3.11
 * pip
-* Modules:
-    * requests
-    * python-dateutil
+* Run command `pip install -r requirements.txt` from the root directory of the repo.
 
 ## File Creation
 Create a file called `auth.txt` in the root directory of the repo and paste your [Ballchasing auth key](https://ballchasing.com/upload) into it.
