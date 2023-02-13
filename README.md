@@ -24,7 +24,7 @@ More validation is performed to account for RLCS admin human errors. **Please do
 
 ## Outputs
 * Terminal
-    * The full parsed replay information - the replay upload time (UTC), region, series ID, game number, both teams, the series score according to the script, the game score and the overtime information.
+    * The full parsed replay information - the replay upload time (UTC), region, series ID, game number, both teams, the series score according to the script, the game score and the overtime information. In the event of a replay parsing error, the error is outputted to the terminal with the replay title.
 * The Timeline `timeline.txt`
     * Minimised replay information for public consumption - the replay upload time (UTC), region, both teams, the series score according to the script, the game score and the overtime information.
 * The JSON Dump `series.json`
