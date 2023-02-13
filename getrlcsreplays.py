@@ -127,10 +127,10 @@ while True:
     now = datetime.datetime.now(datetime.timezone.utc)
 
     # To test on historical data, adjust THIS timedelta
-    then = now # - datetime.timedelta(minutes=149)
+    then = now # - datetime.timedelta(hours=20, minutes=12)
 
     # That is to say, not this one!
-    then2 = then - datetime.timedelta(minutes=1)
+    then2 = then - datetime.timedelta(seconds=20)
 
     url = "https://ballchasing.com/api/replays"
 
@@ -152,100 +152,105 @@ while True:
         data=json.loads(response.content)
         
         for g in range(len(data["list"])-1,-1,-1):
-            game = data["list"][g]
-
-            gametitle = game["replay_title"].split(' ')
             try:
-                gameno = int(gametitle[-2][-1])
-            except Exception:
-                continue
-            if len(gametitle)<2:
-                continue
-            # If this replay is not RLCS formatted discount it
-            if not (gametitle[0] in REGIONS):
-                continue
-            
-            gametime = dateutil.parser.isoparse(game["created"])
+                game = data["list"][g]
 
-            try:
-                blueteam = game["blue"]["name"]
-                orangeteam = game["orange"]["name"]
-            except KeyError:
-                continue
+                gametitle = game["replay_title"].split(' ')
 
-            gamebluescore=game["blue"].get("goals",0)
-            gameorangescore=game["orange"].get("goals",0)
+                if len(gametitle)<2:
+                    raise ValueError("Invalid replay name format - wrong length")
 
-            gameot=game.get("overtime_seconds",0)
+                try:
+                    gameno = int(gametitle[-2][1:])
+                except IndexError:
+                    raise ValueError("Invalid replay name format - game number is not an integer")
+                # If this replay is not RLCS formatted discount it
+                if not (gametitle[0] in REGIONS):
+                    raise ValueError("Invalid replay name format - unexpected region")
+                
+                gametime = dateutil.parser.isoparse(game["created"])
+
+                try:
+                    blueteam = game["blue"]["name"]
+                    orangeteam = game["orange"]["name"]
+                except KeyError:
+                    raise ValueError("Team names not defined in game")
+
+                gamebluescore=game["blue"].get("goals",0)
+                gameorangescore=game["orange"].get("goals",0)
+
+                gameot=game.get("overtime_seconds",0)
 
 
-            # If this matchup has never taken place before
-            # Create a new entry
-            try:
-                thisseries=series[formatSeriesName(blueteam,orangeteam)]
-                if len(thisseries["games"])+1<gameno:
-                    continue
-            except KeyError:
-                series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
-                                             "orange" : orangeteam,
-                                             "time" : int(round(gametime.timestamp())),
-                                             "games" : {}}
-
-                thisseries=series[formatSeriesName(blueteam,orangeteam)]
-
-                if gametitle[-2] == "G0":
-                    print(formatMatchRLCS(thisseries))
-                    printToTimeline(formatMatchCarballTV(thisseries))
-
-            # If this game does not have a duplicate ID we can skip verification
-            try:
-                oldgame=thisseries["games"][gametitle[-2]]
-
-                # If more the 2 hours have passed since the last time this game was played
-                # Or more than 20 minutes have passed since the last test lobby
-                # Reset this matchup as a new series is expected to be starting soon or is ongoing
-                if (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
-                    + datetime.timedelta(hours=2) < gametime) or \
-                    (gametitle[-2] == "G0" and \
-                    (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
-                    + datetime.timedelta(minutes=20) < gametime)):
+                # If this matchup has never taken place before
+                # Create a new entry
+                try:
+                    thisseries=series[formatSeriesName(blueteam,orangeteam)]
+                    if len(thisseries["games"])+1<gameno:
+                        raise ValueError("Out of sequence replay detected")
+                except KeyError:
                     series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
                                                 "orange" : orangeteam,
                                                 "time" : int(round(gametime.timestamp())),
                                                 "games" : {}}
 
+                    thisseries=series[formatSeriesName(blueteam,orangeteam)]
+
                     if gametitle[-2] == "G0":
                         print(formatMatchRLCS(thisseries))
                         printToTimeline(formatMatchCarballTV(thisseries))
-                        continue
 
-                # If the game ID, scores and OT status are the same,
-                # it's basically the same game for our purposes
-                elif oldgame["bluescore"]==gamebluescore and \
-                    oldgame["orangescore"]==gameorangescore:
-                    if not (game["overtime"] or oldgame["ot"]):
-                        continue
-                    elif gameot == oldgame["ot"]:
-                        continue
+                # If this game does not have a duplicate ID we can skip verification
+                try:
+                    oldgame=thisseries["games"][gametitle[-2]]
 
-            except KeyError:
-                pass
-            
-            # Create a new game entry, or update the existing one
-            series[formatSeriesName(blueteam,orangeteam)]["games"][gametitle[-2]]={
-                "bluescore" : gamebluescore,
-                "orangescore" : gameorangescore,
-                "time" : int(round(gametime.timestamp())),
-                "ot" : gameot}
+                    # If more the 2 hours have passed since the last time this game was played
+                    # Or more than 20 minutes have passed since the last test lobby
+                    # Reset this matchup as a new series is expected to be starting soon or is ongoing
+                    if (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
+                        + datetime.timedelta(hours=2) < gametime) or \
+                        (gametitle[-2] == "G0" and \
+                        (datetime.datetime.fromtimestamp(thisseries["time"]).replace(tzinfo=datetime.timezone.utc) \
+                        + datetime.timedelta(minutes=20) < gametime)):
+                        series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
+                                                    "orange" : orangeteam,
+                                                    "time" : int(round(gametime.timestamp())),
+                                                    "games" : {}}
 
-            # All handling for test lobbies should be done
-            if gametitle[-2] == "G0":
-                continue
+                        if gametitle[-2] == "G0":
+                            print(formatMatchRLCS(thisseries))
+                            printToTimeline(formatMatchCarballTV(thisseries))
+                            continue
 
-            thisseries=series[formatSeriesName(blueteam,orangeteam)]
+                    # If the game ID, scores and OT status are the same,
+                    # it's basically the same game for our purposes
+                    elif oldgame["bluescore"]==gamebluescore and \
+                        oldgame["orangescore"]==gameorangescore:
+                        if not (game["overtime"] or oldgame["ot"]):
+                            raise ValueError("Duplicate replay detected, this is expected for streamed games")
+                        elif gameot == oldgame["ot"]:
+                            raise ValueError("Duplicate replay detected, this is expected for streamed games")
 
-            print(formatMatchRLCS(thisseries))
-            printToTimeline(formatMatchCarballTV(thisseries))
+                except KeyError:
+                    pass
+                
+                # Create a new game entry, or update the existing one
+                series[formatSeriesName(blueteam,orangeteam)]["games"][gametitle[-2]]={
+                    "bluescore" : gamebluescore,
+                    "orangescore" : gameorangescore,
+                    "time" : int(round(gametime.timestamp())),
+                    "ot" : gameot}
+
+                # All handling for test lobbies should be done
+                if gametitle[-2] == "G0":
+                    continue
+
+                thisseries=series[formatSeriesName(blueteam,orangeteam)]
+
+                print(formatMatchRLCS(thisseries))
+                printToTimeline(formatMatchCarballTV(thisseries))
+            except ValueError as e:
+                print(e,game["replay_title"],sep="\t")
         updateJSON()
     else:
         print(response.status_code)
