@@ -127,10 +127,10 @@ while True:
     now = datetime.datetime.now(datetime.timezone.utc)
 
     # To test on historical data, adjust THIS timedelta
-    then = now # - datetime.timedelta(hours=20, minutes=12)
+    then = now # - datetime.timedelta(days=1, hours=13, minutes=16)
 
     # That is to say, not this one!
-    then2 = then - datetime.timedelta(seconds=20)
+    then2 = then - datetime.timedelta(seconds=16)
 
     url = "https://ballchasing.com/api/replays"
 
@@ -189,10 +189,13 @@ while True:
                     if len(thisseries["games"])+1<gameno:
                         raise ValueError("Out of sequence replay detected")
                 except KeyError:
-                    series[formatSeriesName(blueteam,orangeteam)]={"blue" : blueteam,
-                                                "orange" : orangeteam,
-                                                "time" : int(round(gametime.timestamp())),
-                                                "games" : {}}
+                    series[formatSeriesName(blueteam,orangeteam)]={
+                        "region" : gametitle[0],
+                        "blue" : blueteam,
+                        "orange" : orangeteam,
+                        "time" : int(round(gametime.timestamp())),
+                        "games" : {}
+                    }
 
                     thisseries=series[formatSeriesName(blueteam,orangeteam)]
 
