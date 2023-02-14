@@ -26,4 +26,4 @@ More validation is performed to account for RLCS admin human errors. **Please do
 * The Timeline `timeline.txt`
     * Minimised replay information for public consumption - the replay upload time (UTC), region, both teams, the series score according to the script, the game score and the overtime information.
 * The JSON Dump `series.json`
-    * All the information that is saved about all series since the script started is outputted here every 15 seconds - the series start time (UTC), region, both teams, the series score according to the script, the game score and the overtime information.
+    * Base level information for use in other applications - the series start time (UTC), region, both teams, the game scores and the overtime information.
