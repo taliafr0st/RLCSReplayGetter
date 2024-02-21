@@ -1,7 +1,7 @@
 An automatic RLCS replay fetcher using the Ballchasing API.
 
-Available under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt).
-* I'm not a lawyer, but this basically means you need to give me credit if you use any part of this script. Any derivative works, whether for personal or commercial use, must be published under this license, or a compatible one.
+Available under [CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt).
+* I'm not a lawyer, but this basically means you need to give me credit if you use any part of this script, and you may only use it for non-commercial purposes. Any derivative works, whether for personal or commercial use, must be published under this license, or a compatible one.
 
 # Setup
 
